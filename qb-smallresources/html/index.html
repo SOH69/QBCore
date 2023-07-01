@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html >
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src = "index.js"></script>
+</head>
+<style>
+    
+    body{
+        overflow-x: hidden;
+    }
+    
+    #cover {
+        position:absolute;
+        display: none;
+        z-index: 2;
+        right: 1.5%;
+        top: 20%;
+        margin: -150px 0 0 -115px;
+        /* animation: rotation 5s ease-in-out infinite; */
+    }
+    
+    @keyframes rotation{
+        0%{
+            transform: rotate(0deg);
+        }
+        100%{
+            transform: rotate(360deg);
+        }
+        
+    }
+    
+    
+</style>
+<body>
+    <img src='logo.png' width="100" height="40" id='cover'/>
+</body>
+</html>
