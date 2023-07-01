@@ -25,5 +25,9 @@ files {
 	'relationships.dat'
 }
 
+dependencies {
+	'ox_lib'
+}
+
 lua54 'yes'
 use_experimental_fxv2_oal 'yes'
