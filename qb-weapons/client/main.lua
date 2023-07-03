@@ -88,7 +88,7 @@ RegisterNetEvent('weapons:client:AddAmmo', function(type, amount, itemData)
                     disableMouse = false,
                     disableCombat = true,
                 }, {}, {}, {}, function() -- Done
-                    if QBCore.Shared.Weapons[weapon] then
+                    if QBCore.Shared.Weapons[weapon] and QBCore.Shared.Weapons[weapon]["ammotype"] == type:upper() then
                         AddAmmoToPed(ped,weapon,amount)
                         TaskReloadWeapon(ped, false)
                         TriggerServerEvent("weapons:server:UpdateWeaponAmmo", CurrentWeaponData, total + amount)
