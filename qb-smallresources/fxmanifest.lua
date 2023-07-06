@@ -1,7 +1,8 @@
 fx_version 'cerulean'
 game 'gta5'
 
-description 'mm-SmallResources'
+description 'mm-smallresources'
+author 'Master Mind#8816'
 version '1.0'
 
 shared_script 'config.lua'

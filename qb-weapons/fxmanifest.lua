@@ -1,7 +1,8 @@
 fx_version 'cerulean'
 game 'gta5'
 
-description 'mm-Weapons'
+description 'mm-weapons'
+author 'Master Mind#8816'
 version '1.0'
 
 shared_scripts {
