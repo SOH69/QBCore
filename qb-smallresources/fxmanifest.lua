@@ -1,8 +1,8 @@
 fx_version 'cerulean'
 game 'gta5'
 
-description 'QB-SmallResources'
-version '1.1.0'
+description 'mm-SmallResources'
+version '1.0'
 
 shared_script 'config.lua'
 shared_script '@ox_lib/init.lua'

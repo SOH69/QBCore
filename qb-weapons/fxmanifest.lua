@@ -1,8 +1,8 @@
 fx_version 'cerulean'
 game 'gta5'
 
-description 'QB-Weapons'
-version '1.2.1'
+description 'mm-Weapons'
+version '1.0'
 
 shared_scripts {
     '@qb-core/shared/locale.lua',
