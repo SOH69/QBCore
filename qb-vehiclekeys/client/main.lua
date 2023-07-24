@@ -14,7 +14,7 @@ local grabkey = false
 local function CheckKeys(PlayerItems)
     keys = {}
     for _, item in pairs(PlayerItems) do
-        if item.name == "keya" then
+        if item.name == "vehiclekey" then
             keys[item.info.plate] = true
         end
     end
@@ -391,13 +391,12 @@ local function LockpickDoor(isAdvanced)
     local vehicle = QBCore.Functions.GetClosestVehicle()
 
     if vehicle == nil or vehicle == 0 then return end
-    if HasKeys(QBCore.Functions.GetPlate(vehicle)) then return end
+    if keys[QBCore.Functions.GetPlate(vehicle)] then return end
     if #(pos - GetEntityCoords(vehicle)) > 2.5 then return end
     if GetVehicleDoorLockStatus(vehicle) <= 0 then return end
 
-    exports['ps-ui']:Circle(function(success)
-        LockpickFinishCallback(success, isAdvanced)
-    end, Config.LockPick.Amt, Config.LockPick.Time) -- NumberOfCircles, MS
+    local success = lib.skillCheck({'easy', 'easy', {areaSize = 60, speedMultiplier = 1}, 'hard'}, {'w', 'a', 's', 'd'})
+    LockpickFinishCallback(success, isAdvanced)
 end
 
 -- Ox Libs

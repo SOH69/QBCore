@@ -38,8 +38,8 @@ RegisterNetEvent('qb-vehiclekeys:server:AcquireVehicleKeys', function(plate, mod
         local info = {}
 		info.plate = plate
 		info.model = model
-		Player.Functions.AddItem('keya', 1, false, info)
-		TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["keya"], "add")
+		Player.Functions.AddItem('vehiclekey', 1, false, info)
+		TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["vehiclekey"], "add")
 	end
 end)
 
@@ -82,7 +82,16 @@ end, 'god')
 
 QBCore.Commands.Add("givekeys", 'Get Key Item(POLICE)', {}, false, function(source, args)
 	local src = source
-    TriggerClientEvent('qb-vehiclekeys:client:GiveKeyItem', src)
+    local Player = QBCore.Functions.GetPlayer(src)
+    if (Player.PlayerData.job.name == "police" or Player.PlayerData.job.name == "cardealer") and Player.PlayerData.job.onduty then
+        TriggerClientEvent('qb-vehiclekeys:client:GiveKeyItem', src)
+    else
+        local ndata = {
+			title = 'Failed',
+    		description = 'Not Verified',
+    		type = 'error'
+		} 
+    end
 end)
 
 lib.callback.register('qb-vehiclekeys:server:GetVehicleKeys', function(source)
