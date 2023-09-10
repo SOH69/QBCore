@@ -21,7 +21,19 @@ Config.Throwables = {
     "smokegrenade",
     "snowball",
     "stickybomb",
-    "weapon_flashbang",
+}
+
+Config.BypassBullet = {
+    "ball",
+    "bzgas",
+    "flare",
+    "grenade",
+    "molotov",
+    "pipebomb",
+    "proxmine",
+    "smokegrenade",
+    "snowball",
+    "stickybomb",
 }
 
 Config.DurabilityMultiplier = {
@@ -83,7 +95,6 @@ Config.DurabilityMultiplier = {
     ['weapon_machinepistol']         = 0.15,
     ['weapon_minismg']               = 0.15,
     ['weapon_raycarbine']            = 0.15,
-    ['weapon_tecpistol']             = 0.15,
 
     -- Shotguns
     ['weapon_pumpshotgun']           = 0.15,
@@ -110,7 +121,6 @@ Config.DurabilityMultiplier = {
     ['weapon_bullpuprifle_mk2']      = 0.15,
     ['weapon_militaryrifle']         = 0.15,
     ['weapon_heavyrifle']            = 0.15,
-    ['weapon_tacticalrifle']         = 0.15,
 
     -- Light Machine Guns
     ['weapon_mg']                    = 0.15,
@@ -125,7 +135,6 @@ Config.DurabilityMultiplier = {
     ['weapon_remotesniper']          = 0.15,
     ['weapon_heavysniper_mk2']       = 0.15,
     ['weapon_marksmanrifle_mk2']     = 0.15,
-    ['weapon_precisionrifle']        = 0.15,
 
     -- Heavy Weapons
     ['weapon_rpg']                   = 0.15,
@@ -151,42 +160,12 @@ Config.DurabilityMultiplier = {
     ['weapon_ball']                  = 0.15,
     ['weapon_smokegrenade']          = 0.15,
     ['weapon_flare']                 = 0.15,
-    ['weapon_flashbang']             = 0.15,
 
     -- Miscellaneous
     ['weapon_petrolcan']             = 0.15,
     ['weapon_fireextinguisher']      = 0.15,
     ['weapon_hazardcan']             = 0.15,
     ['weapon_fertilizercan']         = 0.15,
-
-        -- GGC Custom Weapons -- Melees
-	['weapon_katana'] 		    = 0.04,
-	['weapon_shiv'] 		    = 0.04,
-	['weapon_sledgehammer']     = 0.04,
-	['weapon_karambit']         = 0.04,
-	['weapon_keyboard']         = 0.04,
-	-- GGC Custom Weapons -- Hand Guns
-	['weapon_glock17'] 		    = 0.08,
-	['weapon_glock18c'] 		= 0.08,
-	['weapon_glock22'] 			= 0.08,
-	['weapon_deagle'] 			= 0.08,
-	['weapon_fnx45'] 			= 0.08,
-	['weapon_m1911'] 			= 0.08,
-    ['weapon_glock20'] 			= 0.08,
-    ['weapon_glock19gen4'] 		= 0.08,
-    -- GGC Custom Weapons -- SMGs
-    ['weapon_pmxfm'] 			= 0.02,
-    ['weapon_mac10'] 			= 0.02,
-    -- GGC Custom Weapons -- Rifles
-    ['weapon_mk47fm'] 			= 0.02,
-    ['weapon_m6ic'] 			= 0.02,
-    ['weapon_scarsc'] 			= 0.02,
-    ['weapon_m4'] 			    = 0.02,
-    ['weapon_ak47'] 			= 0.02,
-    ['weapon_ak74'] 			= 0.02,
-    ['weapon_aks74'] 			= 0.02,
-    ['weapon_groza'] 			= 0.02,
-    ['weapon_scarh'] 			= 0.02,
 }
 
 Config.WeaponRepairPoints = {
@@ -198,12 +177,12 @@ Config.WeaponRepairPoints = {
 }
 
 Config.WeaponRepairCosts = {
-    ["pistol"] = 7500,
-    ["smg"] = 15000,
-    ["mg"] = 50000,
-    ["shotgun"] = 25000,
-    ["rifle"] = 30000,
-    ["sniper"] = 100000,
+    ["pistol"] = 1000,
+    ["smg"] = 3000,
+    ["mg"] = 4000,
+    ["rifle"] = 5000,
+    ["sniper"] = 7000,
+    ["shotgun"] = 6000
 }
 
 WeaponAttachments = {
