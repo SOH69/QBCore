@@ -3,7 +3,7 @@ game 'gta5'
 
 description 'mm-weapons'
 author 'Master Mind#8816'
-version '1.0'
+version '1.1'
 
 shared_scripts {
     '@qb-core/shared/locale.lua',
