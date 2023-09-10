@@ -129,6 +129,11 @@ RegisterNetEvent("weapons:client:EquipAttachment", function(ItemData, attachment
     end
 end)
 
+AddEventHandler('onResourceStop', function(name)
+    if name ~= GetCurrentResourceName() then return end
+    exports['mm_inventory']:ResetWeapons()
+end)
+
 -- Threads
 
 CreateThread(function()
@@ -146,11 +151,24 @@ end
 
 lib.onCache('weapon', function(value)
     if value then
+        local weapon = GetSelectedPedWeapon(cache.ped)
+        local isthrowable = false
+        local wepName = QBCore.Shared.Weapons[weapon].name
+        for _,v in pairs(Config.BypassBullet) do
+            if 'weapon_'..v == wepName then
+                isthrowable = true
+                return
+            end
+        end
         while IsPedArmed(cache.ped, 6) do
             local ped = cache.ped
+            local ammo = GetAmmoInPedWeapon(ped, weapon)
+            if ammo <= 1 and not isthrowable then
+                DisableControlAction(0, 24, true) 
+                DisableControlAction(0, 257, true)
+                DisablePlayerFiring(ped, true)
+            end
             if (IsControlJustReleased(0, 24) or IsDisabledControlJustReleased(0, 24)) then
-                local weapon = GetSelectedPedWeapon(ped)
-                local ammo = GetAmmoInPedWeapon(ped, weapon)
                 if weapon == GetHashKey("WEAPON_PETROLCAN")  then
                     Wait(1000)
                 end
