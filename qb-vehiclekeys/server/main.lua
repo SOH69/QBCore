@@ -26,9 +26,14 @@ RegisterNetEvent('qb-vehiclekeys:server:setVehLockState', function(vehNetId, sta
     SetVehicleDoorsLocked(NetworkGetEntityFromNetworkId(vehNetId), state)
 end)
 
-RegisterNetEvent('qb-vehiclekeys:server:AcquireTempVehicleKeys', function(plate)
+RegisterNetEvent('vehiclekeys:server:AcquireTempVehicleKeys', function(plate)
     local src = source
     GiveKeys(src, plate)
+end)
+
+RegisterNetEvent('vehiclekeys:server:RemoveTempVehicleKeys', function(plate)
+    local src = source
+    RemoveKeys(src, plate)
 end)
 
 RegisterNetEvent('qb-vehiclekeys:server:AcquireVehicleKeys', function(plate, model)
@@ -36,10 +41,10 @@ RegisterNetEvent('qb-vehiclekeys:server:AcquireVehicleKeys', function(plate, mod
 	local Player = QBCore.Functions.GetPlayer(src)
     if Player then
         local info = {}
-		info.plate = plate
-		info.model = model
+		info.label = model.. '-' ..plate
+        info.plate = plate
 		Player.Functions.AddItem('vehiclekey', 1, false, info)
-		TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["vehiclekey"], "add")
+        TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["vehiclekey"], "add")
 	end
 end)
 
@@ -52,9 +57,38 @@ RegisterNetEvent('qb-vehiclekeys:server:breakLockpick', function(itemName)
     end
 end)
 
-QBCore.Commands.Add("tempkeys", 'Get Temporary Key to the Vehicle', {{name = 'ID', help = "Player ID"}, {name = 'Plate', help = 'Vehicle Plate Number'}}, true, function(source, args)
-	local src = source
-    if not args[1] or not args[2] then
+RegisterNetEvent('qb-vehiclekeys:server:RemoveVehicleKeys', function(plate, model)
+    local src = source
+    local info = {}
+	info.label = model.. '-' ..plate
+    info.plate = plate
+    local items = exports['qb-inventory']:GetItemsByName(src, 'vehiclekey')
+    if items then
+        for _, v in pairs(items) do
+            if lib.table.matches(v.info, info) then
+                exports['qb-inventory']:RemoveItem(src, 'vehiclekey', 1, v.slot)
+            end
+        end
+    end
+end)
+
+lib.addCommand('givetempkeys', {
+    help = 'Remove Temporary Keys',
+    params = {
+        {
+            name = 'target',
+            type = 'playerId',
+            help = 'Target player\'s server id',
+        },
+        {
+            name = 'plate',
+            type = 'string',
+            help = 'Vehicle plate number',
+        }
+    },
+    restricted = 'group.admin'
+}, function(source, args)
+    if not args.plate then
         local ndata = {
 			title = 'Failed',
     		description = 'Arguments not filled in correctly',
@@ -63,12 +97,26 @@ QBCore.Commands.Add("tempkeys", 'Get Temporary Key to the Vehicle', {{name = 'ID
 		TriggerClientEvent('ox_lib:notify', source, ndata)
         return
     end
-    GiveKeys(tonumber(args[1]), args[2])
-end, 'god')
+    GiveKeys(args.target or source, args.plate)
+end)
 
-QBCore.Commands.Add("removekeys", 'Remove Temporary Keys', {{name = 'ID', help = "Player ID"}, {name = 'Plate', help = 'Vehicle Plate Number'}}, true, function(source, args)
-	local src = source
-    if not args[1] or not args[2] then
+lib.addCommand('removetempkeys', {
+    help = 'Remove Temporary Keys',
+    params = {
+        {
+            name = 'target',
+            type = 'playerId',
+            help = 'Target player\'s server id',
+        },
+        {
+            name = 'plate',
+            type = 'string',
+            help = 'Vehicle plate number',
+        }
+    },
+    restricted = 'group.admin'
+}, function(source, args)
+    if not args.plate then
         local ndata = {
 			title = 'Failed',
     		description = 'Arguments not filled in correctly',
@@ -77,11 +125,14 @@ QBCore.Commands.Add("removekeys", 'Remove Temporary Keys', {{name = 'ID', help =
 		TriggerClientEvent('ox_lib:notify', source, ndata)
         return
     end
-    RemoveKeys(tonumber(args[1]), args[2])
-end, 'god')
+    RemoveKeys(args.target or source, args.plate)
+end)
 
-QBCore.Commands.Add("givekeys", 'Get Key Item(POLICE)', {}, false, function(source, args)
-	local src = source
+lib.addCommand('givekeys', {
+    help = 'Remove Temporary Keys',
+    params = {},
+}, function(source)
+    local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     if (Player.PlayerData.job.name == "police" or Player.PlayerData.job.name == "cardealer") and Player.PlayerData.job.onduty then
         TriggerClientEvent('qb-vehiclekeys:client:GiveKeyItem', src)
@@ -90,7 +141,8 @@ QBCore.Commands.Add("givekeys", 'Get Key Item(POLICE)', {}, false, function(sour
 			title = 'Failed',
     		description = 'Not Verified',
     		type = 'error'
-		} 
+		}
+        TriggerClientEvent('ox_lib:notify', source, ndata)
     end
 end)
 

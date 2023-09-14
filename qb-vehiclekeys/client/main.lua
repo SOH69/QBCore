@@ -8,7 +8,6 @@ local isTakingKeys = false
 local canCarjack = true
 local isCarjacking = false
 local lastPickedVehicle = nil
-local showTxt = false
 local grabkey = false
 
 local function CheckKeys(PlayerItems)
@@ -48,8 +47,7 @@ local function HotwireHandler(vehicle, plate)
     IsHotwiring = true
     SetVehicleAlarm(vehicle, true)
     SetVehicleAlarmTimeLeft(vehicle, hotwireTime)
-    exports['qb-core']:HideText()
-    showTxt = false
+    lib.hideTextUI()
     QBCore.Functions.Progressbar("hotwire_vehicle", 'Hotwiring Vehicle...', hotwireTime, false, true, {
         disableMovement = true,
         disableCarMovement = true,
@@ -64,7 +62,7 @@ local function HotwireHandler(vehicle, plate)
         TriggerServerEvent('hud:server:GainStress', math.random(1, 4))
         if (math.random() <= Config.HotwireChance) then
             SetVehicleEngineOn(vehicle, true, false, true)
-            TriggerServerEvent('qb-vehiclekeys:server:AcquireTempVehicleKeys', plate)
+            TriggerServerEvent('vehiclekeys:server:AcquireTempVehicleKeys', plate)
         else
             lib.notify({
                 title = 'Failed',
@@ -75,8 +73,12 @@ local function HotwireHandler(vehicle, plate)
         Wait(1000)
         IsHotwiring = false
     end, function() -- Cancel
-        exports['qb-core']:DrawText('[H] Hotwire Vehicle')
-        showTxt = true
+        if cache.vehicle then
+            lib.showTextUI('Hotwire Vehicle', {
+                position = "left-center",
+                icon = 'car',
+            })
+        end
         StopAnimTask(ped, "anim@amb@clubhouse@tutorial@bkr_tut_ig3@", "machinic_loop_mechandplayer", 1.0)
         Wait(1000)
         IsHotwiring = false
@@ -191,7 +193,7 @@ local function CarjackVehicle(target,playerid)
             SetPedKeepTask(target, true)
             local distance = #(GetEntityCoords(cache.ped) - GetEntityCoords(target))
             if IsPedDeadOrDying(target, false) or distance > 7.5 or IsPlayerFreeAiming(cache.ped) then
-                TriggerEvent("progressbar:client:cancel")
+                lib.cancelProgress()
             end
             Wait(100)
         end
@@ -214,7 +216,7 @@ local function CarjackVehicle(target,playerid)
                 MakePedFlee(target)
                 TriggerServerEvent('hud:server:GainStress', math.random(1, 4))
                 if NetworkIsPlayerTalking(playerid) then
-                    TriggerServerEvent('qb-vehiclekeys:server:AcquireTempVehicleKeys', plate)
+                    TriggerServerEvent('vehiclekeys:server:AcquireTempVehicleKeys', plate)
                 else
                     TaskVehicleMissionPedTarget(target, vehicle, cache.ped, 8, 100.0, 786468, 300.0, 15.0, true)
                     lib.notify({
@@ -287,9 +289,8 @@ local function robKeyLoop(weapon)
                 end
 
                 if entering == 0 and not IsPedInAnyVehicle(ped, false) and GetSelectedPedWeapon(ped) == `WEAPON_UNARMED` then
-                    if showTxt then
-                        exports['qb-core']:HideText()
-                        showTxt = false
+                    if lib.isTextUIOpen() then
+                        lib.hideTextUI()
                     end
                     looped = false
                     break
@@ -302,7 +303,6 @@ end
 
 local function GrabKey(plate, vehicle)
     if grabkey then return end
-    print('entering')
     grabkey = true
     local entering = vehicle
     local driver = GetPedInVehicleSeat(entering, -1)
@@ -316,7 +316,7 @@ local function GrabKey(plate, vehicle)
                     disableMouse = false,
                     disableCombat = true
                 }, {}, {}, {}, function() -- Done
-                    TriggerServerEvent('qb-vehiclekeys:server:AcquireTempVehicleKeys', plate)
+                    TriggerServerEvent('vehiclekeys:server:AcquireTempVehicleKeys', plate)
                     Wait(100)
                     isTakingKeys = false
                     grabkey = false
@@ -334,7 +334,7 @@ local function GrabKey(plate, vehicle)
         else
             TriggerServerEvent('qb-vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(entering), 1)
             if Config.GetKeyDefault then
-                TriggerServerEvent('qb-vehiclekeys:server:AcquireTempVehicleKeys', plate)
+                TriggerServerEvent('vehiclekeys:server:AcquireTempVehicleKeys', plate)
             end
             --Make passengers flee
             local pedsInVehicle = GetPedsInVehicle(entering)
@@ -362,7 +362,7 @@ local function LockpickFinishCallback(success, usingAdvanced)
         TriggerServerEvent('hud:server:GainStress', math.random(1, 4))
         lastPickedVehicle = vehicle
         if GetPedInVehicleSeat(vehicle, -1) == cache.ped then
-            TriggerServerEvent('qb-vehiclekeys:server:AcquireVehicleKeys', QBCore.Functions.GetPlate(vehicle))
+            TriggerServerEvent('vehiclekeys:server:AcquireTempVehicleKeys', QBCore.Functions.GetPlate(vehicle))
         else
             lib.notify({
                 title = 'Lockpicked',
@@ -401,25 +401,49 @@ end
 
 -- Ox Libs
 
+local function isOwningKey()
+    local vehicle = GetVehiclePedIsIn(cache.ped, true)
+    local plate = QBCore.Functions.GetPlate(vehicle)
+    
+    if keys[plate] or tempKeys[plate] then
+        SetVehicleEngineOn(vehicle, true, false, true)
+        if lib.isTextUIOpen() then
+            lib.hideTextUI()
+        end
+    elseif not IsHotwiring and cache.ped and cache.vehicle then
+        lib.showTextUI('Hotwire Vehicle', {
+            position = "left-center",
+            icon = 'car',
+        })
+        robKeyLoop(false)
+    end
+end
+
 lib.onCache('vehicle', function(value)
-    if IsPedInAnyVehicle(cache.ped, true) then
+    if value then
+        isOwningKey()
+    else
+        if lib.isTextUIOpen() then
+            lib.hideTextUI()
+        end
+        grabkey = false
+    end
+end)
+
+lib.onCache('seat', function(value)
+    if cache.ped then
         local vehicle = GetVehiclePedIsIn(cache.ped, true)
         local plate = QBCore.Functions.GetPlate(vehicle)
 
-        if keys[plate] or tempKeys[plate] then
-            SetVehicleEngineOn(vehicle, true, false, true)
-            showTxt = false
-        elseif not IsHotwiring then
-            exports['qb-core']:DrawText('[H] Hotwire Vehicle')
-            showTxt = true
-            robKeyLoop(false)
+        if not (keys[plate] or tempKeys[plate]) then
+            if value ~= -1 then
+                if lib.isTextUIOpen() then
+                    lib.hideTextUI()
+                end
+            else
+                isOwningKey()
+            end   
         end
-    else
-        if showTxt then
-            exports['qb-core']:HideText()
-            showTxt = false
-        end
-        grabkey = false
     end
 end)
 
@@ -456,6 +480,11 @@ end)
 RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
     PlayerData = val
     CheckKeys(PlayerData.items)
+    isOwningKey()
+end)
+
+RegisterNetEvent('qb-vehiclekeys:client:checkkeys', function()
+    isOwningKey()
 end)
 
 RegisterNetEvent('qb-vehiclekeys:client:AddTempKeys', function(plate)
@@ -479,6 +508,11 @@ RegisterNetEvent('vehiclekeys:client:giveKeyItem', function(plate, veh)
     TriggerServerEvent('qb-vehiclekeys:server:AcquireVehicleKeys', plate, model)
 end)
 
+RegisterNetEvent('vehiclekeys:client:removeKeyItem', function(plate, veh)
+    local model = GetLabelText(GetDisplayNameFromVehicleModel(GetEntityModel(veh)))
+    TriggerServerEvent('qb-vehiclekeys:server:RemoveVehicleKeys', plate, model)
+end)
+
 RegisterNetEvent('qb-vehiclekeys:client:GiveKeyItem', function()
     local ped = cache.ped
     local vehicle = GetVehiclePedIsIn(ped, false)
@@ -489,6 +523,10 @@ end)
 
 RegisterNetEvent('lockpicks:UseLockpick', function(isAdvanced)
     LockpickDoor(isAdvanced)
+end)
+
+RegisterNetEvent('qb-vehiclekeys:client:AcquireTempVehicleKeys', function(plate)
+    TriggerServerEvent('vehiclekeys:server:AcquireTempVehicleKeys', plate)
 end)
 
 RegisterKeyMapping('togglelocks', 'LOCK Vehicle', 'keyboard', 'L')
@@ -531,7 +569,6 @@ CreateThread(function()
         local sleep = 250
         if DoesEntityExist(veh) then
             if grabkey then
-                print('wait')
                 sleep = 2500
             else
                 GrabKey(QBCore.Functions.GetPlate(veh), veh) 
