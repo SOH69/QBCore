@@ -375,7 +375,6 @@ RegisterNetEvent("weapons:server:EquipAttachment", function(ItemData, CurrentWea
                 }
                 TriggerClientEvent("addAttachment", src, AttachmentData.component)
                 Player.Functions.SetInventory(Player.PlayerData.items, true)
-                Player.Functions.RemoveItem(ItemData.name, 1)
                 SetTimeout(1000, function()
                     TriggerClientEvent('inventory:client:ItemBox', src, ItemData, "remove")
                 end)
@@ -393,7 +392,6 @@ RegisterNetEvent("weapons:server:EquipAttachment", function(ItemData, CurrentWea
             }
             TriggerClientEvent("addAttachment", src, AttachmentData.component)
             Player.Functions.SetInventory(Player.PlayerData.items, true)
-            Player.Functions.RemoveItem(ItemData.name, 1)
             SetTimeout(1000, function()
                 TriggerClientEvent('inventory:client:ItemBox', src, ItemData, "remove")
             end)
