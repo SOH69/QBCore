@@ -1,6 +1,15 @@
 Config = {}
 
 -- NPC Vehicle Lock States
+if GetResourceState('ox_inventory') == 'started' then
+    Config.Inventory = 'ox_inventory'
+elseif GetResourceState('qb-inventory') == 'started' then
+    Config.Inventory = 'qb-inventory'
+else
+    Config.Inventory = false
+    warn('No Inventory found')
+end
+
 Config.LockNPCDrivingCars = false -- Lock state for NPC cars being driven by NPCs [true = locked, false = unlocked]
 Config.LockNPCParkedCars = true -- Lock state for NPC parked cars [true = locked, false = unlocked]
 Config.GetKeyDefault = false -- you can set this true you will recieve car key on force entering

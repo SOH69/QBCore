@@ -43,17 +43,26 @@ RegisterNetEvent('qb-vehiclekeys:server:AcquireVehicleKeys', function(plate, mod
         local info = {}
 		info.label = model.. '-' ..plate
         info.plate = plate
-		Player.Functions.AddItem('vehiclekey', 1, false, info)
-        TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["vehiclekey"], "add")
+        if Config.Inventory == 'ox_inventory' then
+            exports.ox_inventory:AddItem(src, 'vehiclekey', 1, info)
+        elseif Config.Inventory == 'qb-inventory' then
+            Player.Functions.AddItem('vehiclekey', 1, false, info)
+            TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items["vehiclekey"], "add")
+        end
 	end
 end)
 
 RegisterNetEvent('qb-vehiclekeys:server:breakLockpick', function(itemName)
-    local Player = QBCore.Functions.GetPlayer(source)
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
     if not Player then return end
     if not (itemName == "lockpick" or itemName == "advancedlockpick") then return end
-    if Player.Functions.RemoveItem(itemName, 1) then
-        TriggerClientEvent("inventory:client:ItemBox", source, QBCore.Shared.Items[itemName], "remove")
+    if Config.Inventory == 'ox_inventory' then
+        exports.ox_inventory:RemoveItem(src, itemName, 1)
+    elseif Config.Inventory then
+        if Player.Functions.RemoveItem(itemName, 1) then
+            TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items[itemName], "remove")
+        end
     end
 end)
 
@@ -62,11 +71,20 @@ RegisterNetEvent('qb-vehiclekeys:server:RemoveVehicleKeys', function(plate, mode
     local info = {}
 	info.label = model.. '-' ..plate
     info.plate = plate
-    local items = exports['qb-inventory']:GetItemsByName(src, 'vehiclekey')
+    local items = nil
+    if Config.Inventory == 'ox_inventory' then
+        items = exports.ox_inventory:GetSlotsWithItem(src, 'vehiclekey', info, true)
+    elseif Config.Inventory then
+        items = exports[Config.Inventory]:GetItemsByName(src, 'vehiclekey')
+    end
     if items then
         for _, v in pairs(items) do
             if lib.table.matches(v.info, info) then
-                exports['qb-inventory']:RemoveItem(src, 'vehiclekey', 1, v.slot)
+                if Config.Inventory == 'ox_inventory' then
+                    exports.ox_inventory:RemoveItem(src, 'vehiclekey', 1, info, v.slot)
+                elseif Config.Inventory then
+                    exports[Config.Inventory]:RemoveItem(src, 'vehiclekey', 1, v.slot)
+                end
             end
         end
     end

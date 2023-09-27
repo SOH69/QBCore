@@ -14,7 +14,11 @@ local function CheckKeys(PlayerItems)
     keys = {}
     for _, item in pairs(PlayerItems) do
         if item.name == "vehiclekey" then
-            keys[item.info.plate] = true
+            if Config.Inventory == 'ox_inventory' then
+                keys[item.metadata.plate] = true
+            elseif Config.Inventory then
+                keys[item.info.plate] = true
+            end
         end
     end
 end
