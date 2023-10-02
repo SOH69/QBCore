@@ -10,7 +10,7 @@ local function GiveKeys(id, plate)
         description = 'I got the keys to the vehicle',
         type = 'success'
     }
-    TriggerClientEvent('ox_lib:notify', source, ndata)
+    TriggerClientEvent('ox_lib:notify', id, ndata)
     TriggerClientEvent('qb-vehiclekeys:client:AddTempKeys', id, plate)
 end
 
