@@ -10,21 +10,27 @@ local isCarjacking = false
 local lastPickedVehicle = nil
 local grabkey = false
 
-local function CheckKeys(PlayerItems)
+local function CheckKeys()
     keys = {}
-    for _, item in pairs(PlayerItems) do
-        if item.name == "vehiclekey" then
-            if Config.Inventory == 'ox_inventory' then
-                keys[item.metadata.plate] = true
-            elseif Config.Inventory then
+    if Config.Inventory == 'qb' then
+        local PlayerItems = PlayerData.items
+        for _, item in pairs(PlayerItems) do
+            if item.name == "vehiclekey" then
                 keys[item.info.plate] = true
+            end
+        end
+    elseif Config.Inventory == 'ox' then
+        local PlayerItems = exports.ox_inventory:GetPlayerItems()
+        for _, item in pairs(PlayerItems) do
+            if item.name == "vehiclekey" then
+                keys[item.metadata.plate] = true
             end
         end
     end
 end
 
 local function GetKeys()
-    lib.callback('qb-vehiclekeys:server:GetVehicleKeys', false, function(keysList)
+    lib.callback('vehiclekeys:server:GetVehicleKeys', false, function(keysList)
         KeysList = keysList
     end)
 end
@@ -73,6 +79,12 @@ local function HotwireHandler(vehicle, plate)
                 description = 'Aah it seems too hard!',
                 type = 'error'
             })
+            if cache.vehicle then
+                lib.showTextUI('Hotwire Vehicle', {
+                    position = "left-center",
+                    icon = 'car',
+                })
+            end
         end
         Wait(1000)
         IsHotwiring = false
@@ -104,13 +116,13 @@ local function ToggleVehicleLock(veh)
 
         NetworkRequestControlOfEntity(veh)
         if vehLockStatus == 1 then
-            TriggerServerEvent('qb-vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(veh), 2)
+            TriggerServerEvent('vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(veh), 2)
             lib.notify({
                 title = 'Locked',
                 type = 'success'
             })
         else
-            TriggerServerEvent('qb-vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(veh), 1)
+            TriggerServerEvent('vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(veh), 1)
             lib.notify({
                 title = 'Unlocked',
                 type = 'success'
@@ -190,7 +202,7 @@ local function CarjackVehicle(target,playerid)
     TaskTurnPedToFaceEntity(target, cache.ped, 3.0)
     TaskSetBlockingOfNonTemporaryEvents(target, true)
     TaskPlayAnim(target, "mp_am_hold_up", "holdup_victim_20s", 8.0, -8, -1, 12, 1, false, false, false)
-    
+
     -- Cancel progress bar if: Ped dies during robbery, car gets too far away
     CreateThread(function()
         while isCarjacking do
@@ -331,12 +343,12 @@ local function GrabKey(plate, vehicle)
                 end)
             end
         elseif Config.LockNPCDrivingCars then
-            TriggerServerEvent('qb-vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(entering), 2)
+            TriggerServerEvent('vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(entering), 2)
             SetPedCanBeDraggedOut(driver, false)
             TaskVehicleMissionPedTarget(driver, vehicle, cache.ped, 8, 50.0, 790564, 300.0, 15.0, true)
             grabkey = false
         else
-            TriggerServerEvent('qb-vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(entering), 1)
+            TriggerServerEvent('vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(entering), 1)
             if Config.GetKeyDefault then
                 TriggerServerEvent('vehiclekeys:server:AcquireTempVehicleKeys', plate)
             end
@@ -351,9 +363,9 @@ local function GrabKey(plate, vehicle)
         end
     elseif driver == 0 and entering ~= lastPickedVehicle and not isTakingKeys and not grabkey and (not keys[plate] or not tempKeys[plate]) then
         if Config.LockNPCParkedCars then
-            TriggerServerEvent('qb-vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(entering), 2)
+            TriggerServerEvent('vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(entering), 2)
         else
-            TriggerServerEvent('qb-vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(entering), 1)
+            TriggerServerEvent('vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(entering), 1)
         end
         grabkey = false
     end
@@ -363,16 +375,17 @@ local function LockpickFinishCallback(success, usingAdvanced)
     local vehicle = QBCore.Functions.GetClosestVehicle()
     local chance = math.random()
     if success then
-        TriggerServerEvent('hud:server:GainStress', math.random(1, 4))
+        TriggerServerEvent('hud:server:GainStress', math.random(1, 2))
         lastPickedVehicle = vehicle
         if GetPedInVehicleSeat(vehicle, -1) == cache.ped then
             TriggerServerEvent('vehiclekeys:server:AcquireTempVehicleKeys', QBCore.Functions.GetPlate(vehicle))
+            lib.hideTextUI()
         else
             lib.notify({
                 title = 'Lockpicked',
                 type = 'success'
             })
-            TriggerServerEvent('qb-vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(vehicle), 1)
+            TriggerServerEvent('vehiclekeys:server:setVehLockState', NetworkGetNetworkIdFromEntity(vehicle), 1)
         end
     else
         TriggerServerEvent('hud:server:GainStress', math.random(1, 4))
@@ -380,11 +393,11 @@ local function LockpickFinishCallback(success, usingAdvanced)
     end
     if usingAdvanced then
         if chance <= Config.RemoveLockpickAdvanced then
-            TriggerServerEvent("qb-vehiclekeys:server:breakLockpick", "advancedlockpick")
+            TriggerServerEvent("vehiclekeys:server:breakLockpick", "advancedlockpick")
         end
     else
         if chance <= Config.RemoveLockpickNormal then
-            TriggerServerEvent("qb-vehiclekeys:server:breakLockpick", "lockpick")
+            TriggerServerEvent("vehiclekeys:server:breakLockpick", "lockpick")
         end
     end
 end
@@ -396,6 +409,7 @@ local function LockpickDoor(isAdvanced)
 
     if vehicle == nil or vehicle == 0 then return end
     if keys[QBCore.Functions.GetPlate(vehicle)] then return end
+    if tempKeys[QBCore.Functions.GetPlate(vehicle)] then return end
     if #(pos - GetEntityCoords(vehicle)) > 2.5 then return end
     if GetVehicleDoorLockStatus(vehicle) <= 0 then return end
 
@@ -408,7 +422,7 @@ end
 local function isOwningKey()
     local vehicle = GetVehiclePedIsIn(cache.ped, true)
     local plate = QBCore.Functions.GetPlate(vehicle)
-    
+
     if keys[plate] or tempKeys[plate] then
         SetVehicleEngineOn(vehicle, true, false, true)
         if lib.isTextUIOpen() then
@@ -446,7 +460,7 @@ lib.onCache('seat', function(value)
                 end
             else
                 isOwningKey()
-            end   
+            end
         end
     end
 end)
@@ -461,13 +475,13 @@ end)
 -- Handles state right when the player selects their character and location.
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     PlayerData = QBCore.Functions.GetPlayerData()
-    CheckKeys(PlayerData.items)
+    CheckKeys()
     GetKeys()
 end)
 
 -- Resets state on logout, in case of character change.
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
-    CheckKeys({})
+    CheckKeys()
     PlayerData = {}
 end)
 
@@ -475,23 +489,32 @@ end)
 AddEventHandler('onResourceStart', function(resource)
     if GetCurrentResourceName() == resource then
         PlayerData = QBCore.Functions.GetPlayerData()
-        CheckKeys(PlayerData.items)
+        CheckKeys()
         GetKeys()
     end
 end)
 
 -- Handles state when PlayerData is changed. We're just looking for inventory updates.
-RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
-    PlayerData = val
-    CheckKeys(PlayerData.items)
+if Config.Inventory == 'qb' then
+    RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
+        PlayerData = val
+        CheckKeys()
+        isOwningKey()
+    end)
+elseif Config.Inventory == 'ox' then
+    AddEventHandler('ox_inventory:updateInventory', function(changes)
+        CheckKeys()
+        isOwningKey()
+    end)
+end
+
+
+
+RegisterNetEvent('vehiclekeys:client:checkkeys', function()
     isOwningKey()
 end)
 
-RegisterNetEvent('qb-vehiclekeys:client:checkkeys', function()
-    isOwningKey()
-end)
-
-RegisterNetEvent('qb-vehiclekeys:client:AddTempKeys', function(plate)
+RegisterNetEvent('vehiclekeys:client:AddTempKeys', function(plate)
     tempKeys[plate] = true
     local ped = cache.ped
     if IsPedInAnyVehicle(ped, false) then
@@ -499,37 +522,41 @@ RegisterNetEvent('qb-vehiclekeys:client:AddTempKeys', function(plate)
         local vehicleplate = QBCore.Functions.GetPlate(vehicle)
         if plate == vehicleplate then
             SetVehicleEngineOn(vehicle, true, false, true)
+            lib.hideTextUI()
         end
     end
 end)
 
-RegisterNetEvent('qb-vehiclekeys:client:RemoveTempKeys', function(plate)
+RegisterNetEvent('vehiclekeys:client:RemoveTempKeys', function(plate)
     tempKeys[plate] = nil
 end)
 
 RegisterNetEvent('vehiclekeys:client:giveKeyItem', function(plate, veh)
     local model = GetLabelText(GetDisplayNameFromVehicleModel(GetEntityModel(veh)))
-    TriggerServerEvent('qb-vehiclekeys:server:AcquireVehicleKeys', plate, model)
+    TriggerServerEvent('vehiclekeys:server:AcquireVehicleKeys', plate, model)
 end)
 
-RegisterNetEvent('vehiclekeys:client:removeKeyItem', function(plate, veh)
-    local model = GetLabelText(GetDisplayNameFromVehicleModel(GetEntityModel(veh)))
-    TriggerServerEvent('qb-vehiclekeys:server:RemoveVehicleKeys', plate, model)
-end)
-
-RegisterNetEvent('qb-vehiclekeys:client:GiveKeyItem', function()
+RegisterNetEvent('vehiclekeys:client:removeKeyItem', function()
     local ped = cache.ped
     local vehicle = GetVehiclePedIsIn(ped, false)
     local plate = QBCore.Functions.GetPlate(vehicle)
     local model = GetLabelText(GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)))
-    TriggerServerEvent('qb-vehiclekeys:server:AcquireVehicleKeys', plate, model)
+    TriggerServerEvent('vehiclekeys:server:RemoveVehicleKeys', plate, model)
+end)
+
+RegisterNetEvent('vehiclekeys:client:GiveKeyItem', function()
+    local ped = cache.ped
+    local vehicle = GetVehiclePedIsIn(ped, false)
+    local plate = QBCore.Functions.GetPlate(vehicle)
+    local model = GetLabelText(GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)))
+    TriggerServerEvent('vehiclekeys:server:AcquireVehicleKeys', plate, model)
 end)
 
 RegisterNetEvent('lockpicks:UseLockpick', function(isAdvanced)
     LockpickDoor(isAdvanced)
 end)
 
-RegisterNetEvent('qb-vehiclekeys:client:AcquireTempVehicleKeys', function(plate)
+RegisterNetEvent('vehiclekeys:client:AcquireTempVehicleKeys', function(plate)
     TriggerServerEvent('vehiclekeys:server:AcquireTempVehicleKeys', plate)
 end)
 
@@ -575,7 +602,7 @@ CreateThread(function()
             if grabkey then
                 sleep = 2500
             else
-                GrabKey(QBCore.Functions.GetPlate(veh), veh) 
+                GrabKey(QBCore.Functions.GetPlate(veh), veh)
             end
         end
         Wait(sleep)

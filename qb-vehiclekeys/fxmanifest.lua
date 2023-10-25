@@ -3,7 +3,7 @@ game 'gta5'
 
 description 'mm-vehiclekeys'
 author 'Master Mind#8816'
-version '1.0'
+version '1.1'
 
 shared_scripts {
     '@ox_lib/init.lua',

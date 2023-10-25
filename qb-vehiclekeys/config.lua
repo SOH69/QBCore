@@ -1,23 +1,23 @@
 Config = {}
 
--- NPC Vehicle Lock States
 if GetResourceState('ox_inventory') == 'started' then
-    Config.Inventory = 'ox_inventory'
-elseif GetResourceState('qb-inventory') == 'started' then
-    Config.Inventory = 'qb-inventory'
+    Config.Inventory = 'ox'
+elseif GetResourceState('mm_inventory') == 'started' then
+    Config.Inventory = 'qb'
 else
     Config.Inventory = false
     warn('No Inventory found')
 end
 
+-- NPC Vehicle Lock States
 Config.LockNPCDrivingCars = false -- Lock state for NPC cars being driven by NPCs [true = locked, false = unlocked]
 Config.LockNPCParkedCars = true -- Lock state for NPC parked cars [true = locked, false = unlocked]
 Config.GetKeyDefault = false -- you can set this true you will recieve car key on force entering
 -- Lockpick Settings
 Config.RemoveLockpickNormal = 0.5 -- Chance to remove lockpick on fail
-Config.RemoveLockpickAdvanced = 0.2 -- Chance to remove advanced lockpick on fail
+Config.RemoveLockpickAdvanced = 0.1 -- Chance to remove advanced lockpick on fail
 Config.LockPick = {
-    Amt = 5,
+    Amt = 3,
     Time = 10
 }
 

@@ -39,3 +39,4 @@ COMMANDS:
 /givetempkeys [id] [plate] -- Give temporary keys to a player or self (admin only)
 /removetempkeys [id] [plate] -- Remove temporary keys from a player or self (admin only)
 /givekeys -- Give permanent keys to a vehicle (Police or Cardealer)
+/removekeys -- Remove permanent keys to a vehicle (Police or Cardealer)
